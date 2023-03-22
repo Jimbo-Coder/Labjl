@@ -62,13 +62,34 @@ end
 
 function compton()
    th = [0., 12.1, 25.9, 37., 48., 57.]
-   Aexp = [0, 36.56, 5.02, 4.23, 1.65, 3.63]
+   Ep = [661.7, 623.34, 371.27, 660.86, 573.60,644.80]
    
+   hc = (6.63e-34)*(3e8)
+   Epj = Ep*(1000)*(1.60e-19)
 
-   @.model(x,p) = p[1]* (exp( - p[2]*x)) + p[3]
+   hmc = (6.63e-34)/ ((9.1e-31)*(3e8))
 
+   λ = hc ./Epj
+   λ0 = hc / Epj[1]
+   dl = λ .- λ0
 
+   @.model(x,p) = p[1]* (1 - cos(x*pi/180))
 
+   fit1 = curve_fit(model, th, dl, [hmc])
+   covar = estimate_covar(fit1)
+
+   if (fit1.converged ==false)
+      print("FAILED")  
+   end
    
+   g1=scatter(th,dl, label = "Experimental", dpi = 300,title = "Δλ vs Angle(θ)",xlabel = "Angle θ (deg)", ylabel = "Δλ (m)")
+   plot!(th, model(th,fit1.param), label = "Theor. Fit")
+   gui()
+   print("Fit Parameters ", fit1.param)
+   print("\n")
+   print("Errors ",sqrt.(LinearAlgebra.diag(covar)))
+
+   #savefig(g1, "C:/Users/maxri/Desktop/Classes_4-2/phys382 Adv.Lab/Labjl/Compton/Comptonscat.png")
+
 end
 
